@@ -1,19 +1,19 @@
 {
-	"name": "pomelo-rpc",
-	"version": "1.0.4",
-	"dependencies": {
-		"async": "0.2.10",
-		"crc": "0.2.0",
-		"event-context": "^0.5.4",
-		"event-context-plugin-node": "^0.5.4",
-		"jaeger-client": "^3.7.0",
-		"node-uuid": "1.4.0",
-		"pomelo-loader": "0.0.6",
-		"pomelo-logger": "topfreegames/pomelo-logger#0.1.9",
-		"ws": "1.1.4"
-	},
-	"devDependencies": {
-		"mocha": ">=0.0.1",
-		"should": ">=0.0.1"
-	}
+  "name": "pomelo-rpc",
+  "version": "1.1.0",
+  "dependencies": {
+    "async": "0.2.10",
+    "crc": "0.2.0",
+    "event-context": "^0.5.4",
+    "event-context-plugin-node": "^0.5.4",
+    "jaeger-client": "^3.7.0",
+    "node-uuid": "1.4.0",
+    "pomelo-loader": "0.0.6",
+    "pomelo-logger": "topfreegames/pomelo-logger#0.1.9",
+    "ws": "1.1.4"
+  },
+  "devDependencies": {
+    "mocha": ">=0.0.1",
+    "should": ">=0.0.1"
+  }
 }
