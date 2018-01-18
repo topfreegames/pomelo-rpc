@@ -1,7 +1,4 @@
-var eventContext = require('event-context');
-var eventContextPluginNode = require('event-context-plugin-node');
-
-eventContextPluginNode.patch();
+require('./lib/util/event-context-patcher');
 
 if(process.env.POMELO_RPC_COV) {
   module.exports.client = require('./lib-cov/rpc-client/client');
