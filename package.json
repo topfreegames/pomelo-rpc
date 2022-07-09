@@ -2,11 +2,11 @@
 	"name": "pomelo-rpc",
 	"version": "1.0.4",
 	"dependencies": {
-		"ws": "1.1.4",
+		"ws": "1.1.5",
 		"crc": "0.2.0",
 		"pomelo-loader": "0.0.6",
-		"pomelo-logger": "topfreegames/pomelo-logger#0.1.9",
-		"node-uuid": "1.4.0",
+		"pomelo-logger": "topfreegames/pomelo-logger#0.2.0",
+		"uuid": "8.3.2",
 		"async": "0.2.10"
 	},
 	"devDependencies": {
