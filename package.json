@@ -1,15 +1,24 @@
 {
   "name": "pomelo-rpc",
   "version": "2.2.0",
+  "overrides": {
+    "diff": ">=8.0.3",
+    "serialize-javascript": ">=7.0.3"
+  },
   "dependencies": {
-    "async": "0.2.10",
-    "crc": "0.2.0",
-    "jaeger-tracer-node": "topfreegames/jaeger-tracer-node#v1.3.7",
-    "node-uuid": "1.4.0",
+    "crc": "^4.3.2",
+    "uuid": "^9.0.0",
     "pomelo-loader": "0.0.6",
-    "pomelo-logger": "topfreegames/pomelo-logger#0.4.0",
-    "tfg-event-context": "0.5.6",
-    "ws": "1.1.4"
+    "pomelo-logger": "topfreegames/pomelo-logger#0.6.0",
+    "ws": "^8.18.0"
+  },
+  "optionalDependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "lz4": "^0.6.5",
+    "snappy-stream": "^1.2.2"
+  },
+  "scripts": {
+    "test": "mocha test/rpc-server/acceptor.js test/rpc-server/dispatcher.js test/rpc-server/gateway.js test/rpc-client/client.js test/rpc-client/router.js test/rpc-client/mailstation.js test/rpc-client/tcp-mailbox.js test/rpc-client/ws-mailbox.js test/util/proxy.js --timeout 12000"
   },
   "devDependencies": {
     "mocha": ">=0.0.1",

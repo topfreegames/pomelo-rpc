@@ -84,20 +84,22 @@ describe('gateway', function() {
       should.exist(gateway);
       gateway.start();
 
-      var client = Client.create();
-      client.connect('127.0.0.1', port, function() {
-        client.send(msg, function(err, result) {
-          result.should.eql(value + 1);
-          clientCallbackCount++;
+      gateway.acceptor.server.once('listening', function() {
+        var client = Client.create();
+        client.connect('127.0.0.1', port, function(err) {
+          if (err) return done(err);
+          client.send(msg, function(err, result) {
+            result.should.eql(value + 1);
+            clientCallbackCount++;
+          });
+          setTimeout(function() {
+            clientCallbackCount.should.equal(1);
+            client.close();
+            gateway.stop();
+            done();
+          }, WAIT_TIME);
         });
       });
-
-      setTimeout(function() {
-        clientCallbackCount.should.equal(1);
-        client.close();
-        gateway.stop();
-        done();
-      }, WAIT_TIME);
     });
 
     it('should return an error if the service not exist', function(done) {
@@ -115,21 +117,23 @@ describe('gateway', function() {
       should.exist(gateway);
       gateway.start();
 
-      var client = Client.create();
-      client.connect('127.0.0.1', port, function() {
-        client.send(msg, function(err, result) {
-          should.exist(err)
-          should.not.exist(result);
-          clientCallbackCount++;
+      gateway.acceptor.server.once('listening', function() {
+        var client = Client.create();
+        client.connect('127.0.0.1', port, function(err) {
+          if (err) return done(err);
+          client.send(msg, function(err, result) {
+            should.exist(err);
+            should.not.exist(result);
+            clientCallbackCount++;
+          });
+          setTimeout(function() {
+            clientCallbackCount.should.equal(1);
+            client.close();
+            gateway.stop();
+            done();
+          }, WAIT_TIME);
         });
       });
-
-      setTimeout(function() {
-        clientCallbackCount.should.equal(1);
-        client.close();
-        gateway.stop();
-        done();
-      }, WAIT_TIME);
     });
 
     it('should keep the relationship with request and response in batch rpc calls', function(done) {
@@ -153,25 +157,27 @@ describe('gateway', function() {
       should.exist(gateway);
       gateway.start();
 
-      var client = Client.create();
-      client.connect('127.0.0.1', port, function() {
-        client.send(msg1, function(err, result) {
-          result.should.eql(value + 1);
-          clientCallbackCount++;
-        });
+      gateway.acceptor.server.once('listening', function() {
+        var client = Client.create();
+        client.connect('127.0.0.1', port, function(err) {
+          if (err) return done(err);
+          client.send(msg1, function(err, result) {
+            result.should.eql(value + 1);
+            clientCallbackCount++;
+          });
 
-        client.send(msg2, function(err, result) {
-          result.should.eql(value + 2);
-          clientCallbackCount++;
+          client.send(msg2, function(err, result) {
+            result.should.eql(value + 2);
+            clientCallbackCount++;
+          });
+          setTimeout(function() {
+            clientCallbackCount.should.equal(2);
+            client.close();
+            gateway.stop();
+            done();
+          }, WAIT_TIME);
         });
       });
-
-      setTimeout(function() {
-        clientCallbackCount.should.equal(2);
-        client.close();
-        gateway.stop();
-        done();
-      }, WAIT_TIME);
     });
   });
 });

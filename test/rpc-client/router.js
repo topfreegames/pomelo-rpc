@@ -1,41 +1,48 @@
 var lib = process.env.POMELO_RPC_COV ? 'lib-cov' : 'lib';
 var should = require('should');
-var route = require('../../' + lib + '/rpc-client/router').route;
+var router = require('../../' + lib + '/rpc-client/router');
 
 var WAIT_TIME = 20;
 
+var servers = {
+  'logic': [
+    {id: 'logic-server-1', host: 'localhost', port: 3333},
+    {id: 'logic-server-2', host: 'localhost', port: 4444}
+  ],
+  'area': [
+    {id: 'area-servere-1', host: 'localhost', port: 5555}
+  ]
+};
+
+// Context adapter: router.df(session, msg, context, cb) expects context.getServersByType(serverType)
+var context = {
+  getServersByType: function(serverType) {
+    return servers[serverType] || null;
+  }
+};
+
+var msg = {
+  'serverType': 'logic',
+  'service': 'rpcRemote',
+  'method': 'someMethod',
+  'args': []
+};
+
+var session = {
+  'uid': 'changchang005@gmail.com'
+};
+
 describe('router', function() {
-  var servers = {
-    'logic': [
-      {id: 'logic-server-1', host: 'localhost',  port: 3333},
-      {id: 'logic-server-2', host: 'localhost',  port: 4444}
-    ],
-    'area': [
-      {id: 'area-servere-1', host: 'localhost',  port: 5555}
-    ]
-  };
-
-  var msg = {
-    'serverType': 'logic',
-    'service': 'rpcRemote',
-    'method': 'someMethod',
-    'args': []
-  };
-
-  var session = {
-    'uid': 'changchang005@gmail.com'
-  };
-
-  describe("#route", function() {
+  describe('#route', function() {
     it('should return the same result for the same user if the mapping info not changed', function(done) {
       var firstRoute, secondRoute;
 
-      route(session, msg, servers, function(err, sid) {
+      router.df(session, msg, context, function(err, sid) {
         should.exist(sid);
         firstRoute = sid;
       });
 
-      route(session, msg, servers, function(err, sid) {
+      router.df(session, msg, context, function(err, sid) {
         should.exist(sid);
         secondRoute = sid;
       });
@@ -54,7 +61,7 @@ describe('router', function() {
         'args': []
       };
 
-      route(session, invalidMsg, servers, function(err, sid) {
+      router.df(session, invalidMsg, context, function(err, sid) {
         should.exist(err);
         done();
       });
@@ -62,16 +69,16 @@ describe('router', function() {
 
     it('should be ok when session or session.uid is null', function(done) {
       var okCount = 0;
-      route(null, msg, servers, function(err, sid) {
+      router.df(null, msg, context, function(err, sid) {
         should.exist(sid);
         okCount++;
       });
 
-      var session = {
+      var sessionNull = {
         'uid': null
       };
 
-      route(session, msg, servers, function(err, sid) {
+      router.df(sessionNull, msg, context, function(err, sid) {
         should.exist(sid);
         okCount++;
       });

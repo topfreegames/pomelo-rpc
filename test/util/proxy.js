@@ -25,7 +25,7 @@ B.prototype.addA = function() {
   this.a.value++;
 };
 
-var callback = function(service, method, args, attach, invoke) {
+var callback = function(service, method, args, attach) {
 
 };
 
@@ -33,8 +33,9 @@ describe('proxy', function() {
   describe('#create', function() {
     it('should invoke the proxy function if it had been set', function() {
       var callbackCount = 0;
-      var cb = function(service, method, args, attach, invoke) {
+      var cb = function(service, method, args, attach) {
         callbackCount++;
+        should.strictEqual(arguments.length, 4);
       };
       var a = new A(1);
 
@@ -58,22 +59,15 @@ describe('proxy', function() {
       a.value.should.equal(value + 1);
     });
 
-    it('should invoke the origin function if the invoke callback had been called in proxy function', function() {
+    it('should invoke the origin when proxyCB calls through with 4 args only', function() {
       var callbackCount = 0;
-      var originCallCount = 0;
       var value = 1;
-
-      var cb = function(namespace, method, args, attach, invoke) {
-        callbackCount++;
-        invoke(args);
-      };
       var a = new A(value);
-      a.add = function(num) {
-        originCallCount++;
-        this.value += num;
-      };
 
-      //overwrite the origin function
+      var cb = function(namespace, method, args, attach) {
+        callbackCount++;
+        a.add.apply(a, args);
+      };
       var proxy = Proxy.create({
         origin: a,
         proxyCB: cb
@@ -81,24 +75,20 @@ describe('proxy', function() {
       proxy.add(1);
 
       callbackCount.should.equal(1);
-      originCallCount.should.equal(1);
       a.value.should.equal(value + 1);
     });
 
-    it('should not invoke the origin function if the invoke callback not called', function() {
+    it('should not invoke the origin function if proxyCB does not call it', function() {
       var callbackCount = 0;
-      var originCallCount = 0;
       var value = 1;
 
-      var cb = function(namespace, method, args, attach, invoke) {
+      var cb = function(namespace, method, args, attach) {
         callbackCount++;
       };
       var a = new A(value);
-      //overwrite the origin function
       a.add = function(num) {
-        originCallCount++;
         this.value += this.value;
-      };
+      }
 
       var proxy = Proxy.create({
         origin: a,
@@ -107,7 +97,6 @@ describe('proxy', function() {
       proxy.add(1);
 
       callbackCount.should.equal(1);
-      originCallCount.should.equal(0);
       a.value.should.equal(value);
     });
 
@@ -130,18 +119,21 @@ describe('proxy', function() {
       var valueA = 1;
       var valueB = 2;
 
-      var cb = function(namespace, method, args, attach, invoke) {
-        callbackCount++;
-        invoke(args);
-      };
       var a = new A(valueA);
       var b = new B(valueB);
+      var cb = function(serviceName, method, args, attach) {
+        callbackCount++;
+        var target = (serviceName === 'A' ? a : b);
+        target[method].apply(target, args);
+      };
 
       var proxyA = Proxy.create({
+        service: 'A',
         origin: a,
         proxyCB: cb
       });
       var proxyB = Proxy.create({
+        service: 'B',
         origin: b,
         proxyCB: cb
       });
@@ -159,9 +151,9 @@ describe('proxy', function() {
       var callbackCount = 0;
       var value = 1;
 
-      var cb = function(namespace, method, args, attach, invoke) {
+      var cb = function(namespace, method, args, attach) {
         callbackCount++;
-        invoke(args);
+        a.add.apply(a, args);
       };
       var a = new A(value);
 
@@ -189,7 +181,7 @@ describe('proxy', function() {
       var callbackCount = 0;
       var expectAttach = {someValue: 1, someObject: {}, someStr: "hello"};
 
-      var cb = function(namespace, method, args, attach, invoke) {
+      var cb = function(namespace, method, args, attach) {
         callbackCount++;
         should.exist(attach);
         attach.should.equal(expectAttach);

@@ -2,19 +2,20 @@ var should = require('should');
 var Server = require('../../').server;
 var Client = require('../../').client;
 
-var WAIT_TIME = 100;
+var WAIT_TIME = 500;
 
 // proxy records
+var path = require('path');
 var records = [
-  {namespace: 'user', serverType: 'area', path: __dirname + '../../mock-remote/area'},
-  {namespace: 'sys', serverType: 'connector', path: __dirname + '../../mock-remote/connector'}
+  {namespace: 'user', serverType: 'area', path: path.join(__dirname, '../mock-remote/area')},
+  {namespace: 'sys', serverType: 'connector', path: path.join(__dirname, '../mock-remote/connector')}
 ];
 
-// server info list
+// server info list (serverType required by replaceServers) - use distinct ports to avoid EADDRINUSE when run with other suites
 var serverList = [
-  {id: 'area-server-1', type: "area", host: '127.0.0.1',  port: 3333},
-  {id: 'connector-server-1', type: "connector", host: '127.0.0.1',  port: 4444},
-  {id: 'connector-server-2', type: "connector", host: '127.0.0.1',  port: 5555},
+  {id: 'area-server-1', serverType: 'area', host: '127.0.0.1', port: 3340},
+  {id: 'connector-server-1', serverType: 'connector', host: '127.0.0.1', port: 4440},
+  {id: 'connector-server-2', serverType: 'connector', host: '127.0.0.1', port: 5550},
 ];
 
 // rpc description message
@@ -31,21 +32,25 @@ describe('client', function() {
 
   before(function(done) {
     gateways = [];
-    //start remote servers
     var item, opts, gateway;
-    for(var i=0, l=serverList.length; i<l; i++) {
+    for (var i = 0, l = serverList.length; i < l; i++) {
       item = serverList[i];
       opts = {
         paths: records,
         port: item.port,
         context: {id: item.id}
       };
-
       gateway = Server.create(opts);
       gateways.push(gateway);
       gateway.start();
     }
-    done();
+    var pending = serverList.length;
+    function onListening() {
+      if (--pending === 0) done();
+    }
+    for (var j = 0; j < gateways.length; j++) {
+      gateways[j].acceptor.server.once('listening', onListening);
+    }
   });
 
   after(function(done) {
@@ -101,7 +106,7 @@ describe('client', function() {
 
       var client = Client.create(opts);
       client.addProxies(records);
-      client.addServer(serverList[1]);
+      client.replaceServers([serverList[1]]);
 
       client.start(function(err) {
         should.not.exist(err);
@@ -156,7 +161,7 @@ describe('client', function() {
       var client = Client.create();
       var sid = serverList[0].id;
 
-      client.addServer(serverList[0]);
+      client.replaceServers([serverList[0]]);
 
       client.start(function() {
         client.rpcInvoke(sid, msg, function(err) {

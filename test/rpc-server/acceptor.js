@@ -1,5 +1,5 @@
 var lib = process.env.POMELO_RPC_COV ? 'lib-cov' : 'lib';
-var Acceptor = require('../../' + lib + '/rpc-server/acceptor');
+var Acceptor = require('../../' + lib + '/rpc-server/acceptors/tcp-acceptor');
 var should = require('should');
 var Client = require('./client/mock-client');
 
@@ -35,21 +35,22 @@ describe('acceptor', function() {
 
     it('should emit an error when listen a port in use', function(done) {
       var errorCount = 0;
-      var acceptor = Acceptor.create(null, function(tracer, msg, cb) {});
-
-      should.exist(acceptor);
-      acceptor.on('error', function(err) {
-        should.exist(err);
-        errorCount++;
+      var first = Acceptor.create(null, function(tracer, msg, cb) {});
+      first.listen(port);
+      first.server.once('listening', function() {
+        var second = Acceptor.create(null, function(tracer, msg, cb) {});
+        second.on('error', function(err) {
+          should.exist(err);
+          errorCount++;
+        });
+        second.listen(port);
+        setTimeout(function() {
+          errorCount.should.equal(1);
+          second.close();
+          first.close();
+          done();
+        }, WAIT_TIME);
       });
-
-      acceptor.listen(80);
-
-      setTimeout(function() {
-        errorCount.should.equal(1);
-        acceptor.close();
-        done();
-      }, WAIT_TIME);
     });
   });
 
@@ -72,21 +73,23 @@ describe('acceptor', function() {
       should.exist(acceptor);
       acceptor.listen(port);
 
-      var client = Client.create();
-      client.connect('127.0.0.1', port, function() {
-        client.send(orgMsg, function(backMsg) {
-          backMsg.should.eql(orgMsg);
-          clientCallbackCount++;
+      acceptor.server.once('listening', function() {
+        var client = Client.create();
+        client.connect('127.0.0.1', port, function(err) {
+          if (err) return done(err);
+          client.send(orgMsg, function(backMsg) {
+            backMsg.should.eql(orgMsg);
+            clientCallbackCount++;
+          });
+          setTimeout(function() {
+            callbackCount.should.equal(1);
+            clientCallbackCount.should.equal(1);
+            client.close();
+            acceptor.close();
+            done();
+          }, WAIT_TIME);
         });
       });
-
-      setTimeout(function() {
-        callbackCount.should.equal(1);
-        clientCallbackCount.should.equal(1);
-        client.close();
-        acceptor.close();
-        done();
-      }, WAIT_TIME);
     });
 
     it('should keep the relationship with request and response in batch rpc calls', function(done) {
@@ -110,25 +113,27 @@ describe('acceptor', function() {
       should.exist(acceptor);
       acceptor.listen(port);
 
-      var client = Client.create();
-      client.connect('127.0.0.1', port, function() {
-        client.send(orgMsg1, function(backMsg) {
-          backMsg.should.eql(orgMsg1);
-          clientCallbackCount++;
-        });
-        client.send(orgMsg2, function(backMsg) {
-          backMsg.should.eql(orgMsg2);
-          clientCallbackCount++;
+      acceptor.server.once('listening', function() {
+        var client = Client.create();
+        client.connect('127.0.0.1', port, function(err) {
+          if (err) return done(err);
+          client.send(orgMsg1, function(backMsg) {
+            backMsg.should.eql(orgMsg1);
+            clientCallbackCount++;
+          });
+          client.send(orgMsg2, function(backMsg) {
+            backMsg.should.eql(orgMsg2);
+            clientCallbackCount++;
+          });
+          setTimeout(function() {
+            callbackCount.should.equal(2);
+            clientCallbackCount.should.equal(2);
+            client.close();
+            acceptor.close();
+            done();
+          }, WAIT_TIME);
         });
       });
-
-      setTimeout(function() {
-        callbackCount.should.equal(2);
-        clientCallbackCount.should.equal(2);
-        client.close();
-        acceptor.close();
-        done();
-      }, WAIT_TIME);
     });
   });
 });
