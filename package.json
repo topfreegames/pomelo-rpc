@@ -15,7 +15,7 @@
   "optionalDependencies": {
     "@opentelemetry/api": "^1.9.0",
     "lz4": "^0.6.5",
-    "snappy-stream": "^1.2.2"
+    "snappy": "^7.2.0"
   },
   "scripts": {
     "test": "mocha test/rpc-server/acceptor.js test/rpc-server/dispatcher.js test/rpc-server/gateway.js test/rpc-client/client.js test/rpc-client/router.js test/rpc-client/mailstation.js test/rpc-client/tcp-mailbox.js test/rpc-client/ws-mailbox.js test/util/proxy.js --timeout 12000"

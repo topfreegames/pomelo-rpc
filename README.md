@@ -148,7 +148,7 @@ Implement the low level network communication with remote server. A mail box ins
 TCP connections use an optional handshake to negotiate compression (e.g. deflate). When only one side is upgraded: **old client → new server** works (server treats the connection as legacy). **New client → old server** can break because the old server may misparse the handshake. When connecting to a legacy server, pass **`handshake: false`** in the client/mailbox opts so the client skips the handshake and uses plain Composer.
 
 #### Optional compression (lz4, snappy)
-Compression is negotiated in the handshake. **deflate** is built-in (zlib). **lz4** and **snappy** are optional: install the corresponding optional dependency to enable them (`lz4`, `snappy-stream`). If an optional compressor is negotiated but not installed, the connection falls back to no compression and a warning is logged.
+Compression is negotiated in the handshake. **deflate** is built-in (zlib). **lz4** and **snappy** are optional: install the corresponding optional dependency to enable them (`lz4`, `snappy`). If an optional compressor is negotiated but not installed, the connection falls back to no compression and a warning is logged.
 
 ###mailbox.connect(tracer, cb)
 Connect to the remote server. tracer: RPC tracer for the connection.
