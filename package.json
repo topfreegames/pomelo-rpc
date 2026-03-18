@@ -1,6 +1,6 @@
 {
   "name": "pomelo-rpc",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "overrides": {
     "diff": ">=8.0.3",
     "serialize-javascript": ">=7.0.3"
